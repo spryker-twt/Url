@@ -83,7 +83,7 @@ class UrlReader implements UrlReaderInterface
     protected function queryUrlEntity(UrlTransfer $urlTransfer, $ignoreUrlRedirects = false)
     {
         if ($urlTransfer->getUrl()) {
-            $urlQuery = $this->queryUrlEntityByUrl($urlTransfer->getUrl(), $ignoreUrlRedirects);
+            $urlQuery = $this->queryUrlEntityByUrl($urlTransfer->getUrl(), $ignoreUrlRedirects, $urlTransfer->getFkLocale());
         } elseif ($urlTransfer->getIdUrl()) {
             $urlQuery = $this->queryUrlEntityById($urlTransfer->getIdUrl(), $ignoreUrlRedirects);
         } else {
@@ -99,8 +99,8 @@ class UrlReader implements UrlReaderInterface
     }
 
     /**
-     * @param int $idUrl
-     * @param bool $ignoreUrlRedirects
+     * @param int      $idUrl
+     * @param bool     $ignoreUrlRedirects
      *
      * @return \Orm\Zed\Url\Persistence\SpyUrlQuery
      */
@@ -110,14 +110,23 @@ class UrlReader implements UrlReaderInterface
     }
 
     /**
-     * @param string $url
-     * @param bool $ignoreUrlRedirects
+     * @param string   $url
+     * @param bool     $ignoreUrlRedirects
+     * @param int|null $idLocale
      *
      * @return \Orm\Zed\Url\Persistence\SpyUrlQuery
      */
-    protected function queryUrlEntityByUrl($url, $ignoreUrlRedirects)
+    protected function queryUrlEntityByUrl($url, $ignoreUrlRedirects, $idLocale)
     {
-        return $this->getBaseQuery($ignoreUrlRedirects)->filterByUrl($url);
+        $conditions = [
+            'url' => $url,
+        ];
+
+        if (0 < (int) $idLocale) {
+            $conditions['FkLocale'] = $idLocale;
+        }
+
+        return $this->getBaseQuery($ignoreUrlRedirects)->filterByArray($conditions);
     }
 
     /**
